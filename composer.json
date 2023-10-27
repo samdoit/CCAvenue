@@ -1,0 +1,26 @@
+{
+    "name": "samdoit/ccavenue",
+    "description": "CCAvenue Payment Gateway PHP Library",
+    "version": "0.0.1",
+    "license": "MIT",
+    "keywords": ["ccavenue", "php", "library", "payment gateway"],
+    "authors": [
+        {
+            "name": "samdoit Infotech",
+            "email": "info@samdoit.com"
+        }
+    ],
+    "suggest": {
+        "ext-mcrypt": "Required for most features of CCAvenue"
+    },
+    "require": {
+        "php": ">=7.1"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Samdoit\\CCAvenue\\": "src"
+        }
+    }
+}
