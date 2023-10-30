@@ -3,12 +3,21 @@
 namespace Samdoit\CCAvenue;
 
 use Samdoit\CCAvenue\Utils;
- 
+
+/**
+ * CCAvenue Laravel Wrapper Class
+ *
+ * This class is used to interface with Laravel and CCAvenue
+ *
+ * @package    Samdoit\CCAvenue
+ * @subpackage API
+ * @author     Samdoit Infotech <info@samdoit.com>
+ */
 class CCAvenuePayment
 {
-
     private $working_key;
     private $merchant_id;
+    private $access_code;
     private $amount;
     private $order_id;
     private $url;
@@ -29,11 +38,11 @@ class CCAvenuePayment
     private $delivery_tel;
     private $billing_notes;
 
-    public function __construct( $merchant_id, $working_key, $url )
+    public function __construct( )
     {
-        $this->merchant_id = $merchant_id;
-        $this->working_key = $working_key;
-        $this->url = $url;
+        $this->merchant_id = $config('ccavenue.merchant_id');
+        $this->working_key = $config('ccavenue.working_key');
+        $this->access_code = $config('ccavenue.access_code');
     }
 
     public function getWorkingKey()
@@ -46,14 +55,9 @@ class CCAvenuePayment
         return $this->merchant_id;
     }
 
-    public function setWorkingKey( $working_key )
+    public function getAccessCode()
     {
-        $this->working_key = $working_key;
-    }
-
-    public function setMerchantId( $merchant_id )
-    {
-        $this->merchant_id = $merchant_id;
+        return $this->merchant_id;
     }
 
     public function setAmount( $amount )
@@ -257,29 +261,28 @@ class CCAvenuePayment
         $this->delivery_tel = $this->billing_tel;
     }
 
-    private function getMerchantData( $checksum )
+    private function getMerchantData( )
     {
-        $merchant_data= 'Merchant_Id='.$this->getMerchantId();
-        $merchant_data .= '&Amount='.$this->getAmount();
-        $merchant_data .= '&Order_Id='.$this->getOrderId();
-        $merchant_data .= '&Redirect_Url='.$this->getRedirectUrl();
-        $merchant_data .= '&billing_cust_name='.$this->getBillingName();
-        $merchant_data .= '&billing_cust_address='.$this->getBillingAddress();
-        $merchant_data .= '&billing_cust_country='.$this->getBillingCountry();
-        $merchant_data .= '&billing_cust_state='.$this->getBillingState();
-        $merchant_data .= '&billing_cust_city='.$this->getBillingCity();
-        $merchant_data .= '&billing_zip_code='.$this->getBillingZip();
-        $merchant_data .= '&billing_cust_tel='.$this->getBillingTel();
-        $merchant_data .= '&billing_cust_email='.$this->getBillingEmail();
-        $merchant_data .= '&delivery_cust_name='.$this->getDeliveryName();
-        $merchant_data .= '&delivery_cust_address='.$this->getDeliveryAddress();
-        $merchant_data .= '&delivery_cust_country='.$this->getDeliveryCountry();
-        $merchant_data .= '&delivery_cust_state='.$this->getDeliveryState();
-        $merchant_data .= '&delivery_cust_city='.$this->getDeliveryCity();
-        $merchant_data .= '&delivery_zip_code='.$this->getDeliveryZip();
-        $merchant_data .= '&delivery_cust_tel='.$this->getDeliveryTel();
-        $merchant_data .= '&billing_cust_notes='.$this->getBillingNotes();
-        $merchant_data .= '&Checksum='.$checksum  ;
+        $merchant_data= 'Merchant_Id='.urlencode($this->getMerchantId());
+        $merchant_data .= '&Amount='.urlencode($this->getAmount());
+        $merchant_data .= '&Order_Id='.urlencode($this->getOrderId());
+        $merchant_data .= '&Redirect_Url='.urlencode($this->getRedirectUrl());
+        $merchant_data .= '&billing_cust_name='.urlencode($this->getBillingName());
+        $merchant_data .= '&billing_cust_address='.urlencode($this->getBillingAddress());
+        $merchant_data .= '&billing_cust_country='.urlencode($this->getBillingCountry());
+        $merchant_data .= '&billing_cust_state='.urlencode($this->getBillingState());
+        $merchant_data .= '&billing_cust_city='.urlencode($this->getBillingCity());
+        $merchant_data .= '&billing_zip_code='.urlencode($this->getBillingZip());
+        $merchant_data .= '&billing_cust_tel='.urlencode($this->getBillingTel());
+        $merchant_data .= '&billing_cust_email='.urlencode($this->getBillingEmail());
+        $merchant_data .= '&delivery_cust_name='.urlencode($this->getDeliveryName());
+        $merchant_data .= '&delivery_cust_address='.urlencode($this->getDeliveryAddress());
+        $merchant_data .= '&delivery_cust_country='.urlencode($this->getDeliveryCountry());
+        $merchant_data .= '&delivery_cust_state='.urlencode($this->getDeliveryState());
+        $merchant_data .= '&delivery_cust_city='.urlencode($this->getDeliveryCity());
+        $merchant_data .= '&delivery_zip_code='.urlencode($this->getDeliveryZip());
+        $merchant_data .= '&delivery_cust_tel='.urlencode($this->getDeliveryTel());
+        $merchant_data .= '&billing_cust_notes='.urlencode($this->getBillingNotes());
 
         return $merchant_data;
     }
@@ -287,7 +290,7 @@ class CCAvenuePayment
     public function getEncryptedData()
     {
         $utils = new Utils($this);
-        $merchant_data = $this->getMerchantData($utils->getChecksum());
+        $merchant_data = $this->getMerchantData();
         return $utils->encrypt($merchant_data, $this->getWorkingKey());
     }
 
@@ -295,44 +298,28 @@ class CCAvenuePayment
     {
         $utils = new Utils($this);
         $resonse_data = $utils->decrypt($response, $this->getWorkingKey());
-        $payment_data=explode('&', $resonse_data);
-        $data_size=sizeof($payment_data);
 
-        $auth_desc = null;
-        $checksum = null;
-
-        for ($i = 0; $i < $data_size; $i++) {
-            $information = explode('=', $payment_data[$i]);
-            if ($i==0 ) {    
-                $this->setMerchantId($information[1]);
-            }    
-            if ($i==1) {    
-                $this->setOrderId($information[1]);
+        $orderStatus = "";
+        $decryptValues = explode('&', $rcvdString);
+        $dataSize = sizeof($decryptValues);
+    
+        for($i = 0; $i < $dataSize; $i++)  {
+            $information = explode('=', $decryptValues[$i]);
+            if ($i==3) {
+                $order_status = $information[1];
             }
-            if ($i==2) {    
-                $this->setAmount($information[1]);
-            }    
-            if ($i==3) {    
-                $auth_desc = $information[1];
-            }
-            if ($i==4) {    
-                $checksum = $information[1];
-            }    
         }
-
-        $payment_data_string = $this->getMerchantId().'|'.$this->getOrderId().'|'.$this->getAmount().'|'.$auth_desc.'|'.$this->getWorkingKey();
-        $verify_checksum = $utils->verifyChecksum($utils->genchecksum($payment_data_string), $checksum);
-
-        if ($verify_checksum==true && $auth_desc==="Y") {
-            return "success";
-        } else if ($verify_checksum==true && $auth_desc==="B") {
-            return "pending";
-        } else if ($verify_checksum==true && $auth_desc==="N") {
-            return "declined";
+        $return['dataSize'] = $dataSize;
+        $return['decryptValues'] = $decryptValues;
+        if($orderStatus === "Success") {
+            $return['status'] = "success";
+        } else if($orderStatus === "Aborted") {
+            $return['status'] = "pending";
+        } else if($orderStatus === "Failure") {
+            $return['status'] = "declined";
         } else {
-            return "error";
+            $return['status'] = "error";
         }
-
-    }
- 
+        return $return;
+    } 
 }

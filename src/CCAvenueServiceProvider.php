@@ -12,10 +12,11 @@ class CCAvenueServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->publishes([
-            __DIR__.'/../config/ccavenue.php' => config_path('ccavenue.php'),
-        ]);
-
+        $this->publishes(
+            [
+            __DIR__.'/config/ccavenue.php' => config_path('ccavenue.php'),
+            ]
+        );
     }
 
     /**
