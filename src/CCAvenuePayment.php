@@ -40,9 +40,9 @@ class CCAvenuePayment
 
     public function __construct( )
     {
-        $this->merchant_id = $config('ccavenue.merchant_id');
-        $this->working_key = $config('ccavenue.working_key');
-        $this->access_code = $config('ccavenue.access_code');
+        $this->merchant_id = config('ccavenue.merchant_id');
+        $this->working_key = config('ccavenue.working_key');
+        $this->access_code = config('ccavenue.access_code');
     }
 
     public function getWorkingKey()
@@ -57,7 +57,7 @@ class CCAvenuePayment
 
     public function getAccessCode()
     {
-        return $this->merchant_id;
+        return $this->access_code;
     }
 
     public function setAmount( $amount )
@@ -294,7 +294,7 @@ class CCAvenuePayment
         return $utils->encrypt($merchant_data, $this->getWorkingKey());
     }
 
-    public function response( $response )
+    public function response($response)
     {
         $utils = new Utils($this);
         $resonse_data = $utils->decrypt($response, $this->getWorkingKey());
